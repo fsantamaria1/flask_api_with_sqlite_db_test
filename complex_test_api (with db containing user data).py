@@ -46,6 +46,7 @@ def get_one_user(public_id):
 
     if not user:
         return jsonify({'message': 'No user found!'})
+
     user_data = {}
     user_data['public_id'] = user.public_id
     user_data['name'] = user.name
@@ -60,7 +61,7 @@ def create_users():
 
     hashed_password= generate_password_hash(data['password'], method='sha256')
 
-    new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=True)
+    new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
     db.session.add(new_user)
     db.session.commit()
 
@@ -68,7 +69,15 @@ def create_users():
 
 @app.route('/user/<public_id>', methods=['PUT'])
 def promote_user(public_id):
-    return ''
+
+    user = User.query.filter_by(public_id=public_id).first()
+
+    if not user:
+        return jsonify({'message': 'No user found!'})
+
+    user.admin = True
+    db.session.commit()
+    return jsonify({'message':'The user has been promoted!'})
 
 @app.route('/user/<public_id>', methods=['DELETE'])
 def delete_user(public_id):
