@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 import uuid
@@ -158,6 +159,26 @@ def login():
 
     # Password does not exist
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+
+@app.route('/todo', methods=['GET'])
+def get_all_todos():
+    return ''
+
+@app.route('/todo/<todo_id>', methods=['GET'])
+def get_one_todo(todo_id):
+    return ''
+
+@app.route('/todo', methods=['POST'])
+def create_todo():
+    return ''
+
+@app.route('/todo/<todo_id>', methods=['PUT'])
+def complete_todo(todo_id):
+    return ''
+
+@app.route('/todo/<todo_id>', methods=['DELETE'])
+def delete_todo(todo_id):
+    return ''
 
 
 if __name__ == '__main__':
