@@ -161,25 +161,29 @@ def login():
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
 
 @app.route('/todo', methods=['GET'])
-def get_all_todos():
+@token_required
+def get_all_todos(current_user):
     return ''
 
 @app.route('/todo/<todo_id>', methods=['GET'])
-def get_one_todo(todo_id):
+@token_required
+def get_one_todo(current_user, todo_id):
     return ''
 
 @app.route('/todo', methods=['POST'])
-def create_todo():
+@token_required
+def create_todo(current_user):
     return ''
 
 @app.route('/todo/<todo_id>', methods=['PUT'])
-def complete_todo(todo_id):
+@token_required
+def complete_todo(current_user, todo_id):
     return ''
 
 @app.route('/todo/<todo_id>', methods=['DELETE'])
-def delete_todo(todo_id):
+@token_required
+def delete_todo(current_user, todo_id):
     return ''
-
 
 if __name__ == '__main__':
     app.run(debug=True)
