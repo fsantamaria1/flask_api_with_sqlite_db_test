@@ -1,4 +1,3 @@
-from crypt import methods
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 import uuid
@@ -173,7 +172,13 @@ def get_one_todo(current_user, todo_id):
 @app.route('/todo', methods=['POST'])
 @token_required
 def create_todo(current_user):
-    return ''
+    data = request.get_json()
+
+    new_todo = Todo(text=data['text'], complete=False, user_id=current_user.id)
+    db.session.add(new_todo)
+    db.session.commit()
+
+    return jsonify({'message' : 'Todo created'})
 
 @app.route('/todo/<todo_id>', methods=['PUT'])
 @token_required
