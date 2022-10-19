@@ -23,7 +23,6 @@ class User(db.Model):
     manager = db.Column(db.Boolean)
     admin = db.Column(db.Boolean)
 
-
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     division = db.Column(db.String(20))
@@ -46,7 +45,7 @@ def create_users():
         # elif len(data["username"]) <5:
         elif len(data.get("username")) <5:
             return jsonify({'message': 'Username too short!'}), 400
-        elif len(data["password"]) <5:
+        elif len(data.get("password")) <5:
             return jsonify({'message': 'Password too short!'}), 400
 
     except:
