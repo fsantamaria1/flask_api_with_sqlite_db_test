@@ -18,10 +18,11 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     public_id = db.Column(db.String(50), unique=True)
-    username = db.Column(db.String(50))
-    password = db.Column(db.String(80))
+    username = db.Column(db.String(20))
+    password = db.Column(db.String(65))
     manager = db.Column(db.Boolean)
     admin = db.Column(db.Boolean)
+    active = db.Column(db.Boolean)
 
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,8 +43,7 @@ def create_users():
             return jsonify({'message': 'No username found!'}), 400
         elif not data.get("password"):
             return jsonify({'message': 'No password found!'}), 400
-        # elif len(data["username"]) <5:
-        elif len(data.get("username")) <5:
+        elif (len(data.get("username")) <4) or (len(data.get("username")) >= 20):
             return jsonify({'message': 'Username too short!'}), 400
         elif len(data.get("password")) <5:
             return jsonify({'message': 'Password too short!'}), 400
@@ -58,13 +58,31 @@ def create_users():
         hashed_password= generate_password_hash(data['password'], method='sha256')
 
         #Create new user
-        new_user = User(public_id=str(uuid.uuid4()), username=data['username'], password=hashed_password, manager=False, admin=False)
+        new_user = User(public_id=str(uuid.uuid4()), username=data['username'], password=hashed_password, manager=False, admin=False, active=False)
         db.session.add(new_user)
         db.session.commit()
 
         return jsonify({'message': 'New user created!'})
     else:
         return jsonify({"message": "User already exists!"})
+
+@app.route('/users', methods=['GET'])
+def get_all_users():
+
+    users = User.query.all()
+
+    output = []
+
+    for user in users:
+        user_data = {}
+        user_data['public_id'] = user.public_id
+        user_data['username'] = user.username
+        user_data['password'] = user.password
+        user_data['manager'] = user.manager
+        user_data['admin'] = user.admin
+        user_data['active'] = user.active
+        output.append(user_data)
+    return jsonify({'users': output})
 
 if __name__ == '__main__':
     app.run(debug=True)
