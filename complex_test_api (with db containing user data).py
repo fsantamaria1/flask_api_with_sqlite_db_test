@@ -157,6 +157,7 @@ def login():
         return jsonify({'token': token})
 
     # Password does not exist
+    make_response()
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
 
 @app.route('/todo', methods=['GET'])
