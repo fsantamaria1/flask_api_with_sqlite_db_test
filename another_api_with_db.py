@@ -84,6 +84,32 @@ def get_all_users():
         output.append(user_data)
     return jsonify({'users': output})
 
+@app.route('/user/<public_id>', methods=['PUT'])
+def promote_user(public_id):
+    #Get data from request
+    try:
+        data = request.get_json()
+        if not data.get("promotion"):
+            return jsonify({'message': 'No promotion found!'}), 400
+    except:
+         return jsonify({'message': 'No data found!'}), 400
+
+    #Query database to see if user exists
+    user = User.query.filter_by(public_id=public_id).first()
+
+    if not user:
+        return jsonify({'message': 'No user found!'})
+
+    #Promote User 
+    if data.get("promotion") == "admin":
+        user.admin = True
+    elif data.get("promotion") == "manager":
+        user.manager = True
+    else:
+        return jsonify({'message': 'No valid promotion found!'}), 400
+    db.session.commit()
+    return jsonify({'message':'The user has been promoted!'})
+
 @app.route('/login')
 def login():
     auth = request.authorization
