@@ -135,6 +135,20 @@ def promote_user(current_user, public_id):
     db.session.commit()
     return jsonify({'message':'The user has been promoted!'})
 
+@app.route('/user/<public_id>', methods=['DELETE'])
+@token_required
+def delete_user(current_user, public_id):
+
+    user = User.query.filter_by(public_id=public_id).first()
+
+    if not user:
+        return jsonify({'message': 'No user found!'})
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({'message':'The user has been deleted!'})
+
 @app.route('/login')
 def login():
     auth = request.authorization
