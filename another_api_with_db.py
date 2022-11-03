@@ -106,6 +106,25 @@ def get_all_users(current_user):
         output.append(user_data)
     return jsonify({'users': output})
 
+@app.route('/user/<public_id>', methods=['GET'])
+@token_required
+def get_one_user(current_user, public_id):
+
+    user = User.query.filter_by(public_id=public_id).first()
+
+    if not user:
+        return jsonify({'message': 'No user found!'})
+
+    user_data = {}
+    user_data['public_id'] = user.public_id
+    user_data['username'] = user.username
+    user_data['password'] = user.password
+    user_data['manager'] = user.manager
+    user_data['admin'] = user.admin
+    user_data['active'] = user.active
+
+    return jsonify({'user': user_data})
+
 @app.route('/user/<public_id>', methods=['PUT'])
 @token_required
 def promote_user(current_user, public_id):
