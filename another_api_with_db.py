@@ -79,7 +79,7 @@ def create_users(current_user):
         hashed_password= generate_password_hash(data['password'], method='sha256')
 
         #Create new user
-        new_user = User(public_id=str(uuid.uuid4()), username=data['username'], password=hashed_password, manager=False, admin=False, active=False)
+        new_user = User(public_id=str(uuid.uuid4()), username=data['username'], password=hashed_password, manager=False, admin=False, active=True)
         db.session.add(new_user)
         db.session.commit()
 
@@ -147,8 +147,8 @@ def promote_user(current_user, public_id):
         user.admin = True
     elif data.get("promotion") == "manager":
         user.manager = True
-    elif data.get("promotion") == "active":
-        user.active = True
+    elif data.get("promotion") == "inactive":
+        user.active = False
     else:
         return jsonify({'message': 'No valid promotion found!'}), 400
     db.session.commit()
