@@ -56,6 +56,11 @@ def token_required(f):
 @token_required
 def create_users(current_user):
 
+    if not current_user.admin:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+    if not current_user.active:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+
     try:
         # Get data from request
         data = request.get_json()
@@ -91,6 +96,11 @@ def create_users(current_user):
 @token_required
 def get_all_users(current_user):
 
+    if not current_user.admin:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+    if not current_user.active:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+
     users = User.query.all()
 
     output = []
@@ -110,6 +120,11 @@ def get_all_users(current_user):
 @token_required
 def get_one_user(current_user, public_id):
 
+    if not current_user.admin:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+    if not current_user.active:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+
     user = User.query.filter_by(public_id=public_id).first()
 
     if not user:
@@ -128,6 +143,12 @@ def get_one_user(current_user, public_id):
 @app.route('/user/<public_id>', methods=['PUT'])
 @token_required
 def promote_user(current_user, public_id):
+
+    if not current_user.admin:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+    if not current_user.active:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+
     #Get data from request
     try:
         data = request.get_json()
@@ -157,6 +178,11 @@ def promote_user(current_user, public_id):
 @app.route('/user/<public_id>', methods=['DELETE'])
 @token_required
 def delete_user(current_user, public_id):
+
+    if not current_user.admin:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
+    if not current_user.active:
+        return jsonify({'message': 'Cannot perform that action!'}), 403
 
     user = User.query.filter_by(public_id=public_id).first()
 
