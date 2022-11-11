@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from functools import wraps
+import api_messages
 
 app = Flask(__name__)
 
@@ -200,21 +201,24 @@ def login():
 
     # Authorization information does not exist
     if not auth or not auth.username or not auth.password:
-        return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+        return api_messages.CouldNotVerify()
 
     user = User.query.filter_by(username=auth.username).first()
+    ## Figure out what type user is
+    print(user)
 
     # User does not exist
     if not user:
-        return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
-    
+        return api_messages.UserDoesNotExist()
+
+    # Check if the password matches
     if check_password_hash(user.password, auth.password):
         token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
 
         return jsonify({'token': token})
 
-    # Password does not exist
-    return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+    # Password does not exist or is invalid
+    return api_messages.InvalidCredentials()
 
 if __name__ == '__main__':
     app.run(debug=True)
