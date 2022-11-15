@@ -42,13 +42,13 @@ def token_required(f):
             token = request.headers['x-access-token']
 
         if not token:
-            return jsonify({'message': 'Token is missing'}), 401
+            return api_messages.TokenIsMissing()
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             current_user = User.query.filter_by(public_id=data['public_id']).first()
         except:
-            return jsonify({'message':'Token is invalid'}), 401
+            return api_messages.InvalidToken()
 
         return f(current_user, *args, **kwargs)
     return decorated
@@ -58,25 +58,24 @@ def token_required(f):
 def create_users(current_user):
 
     if not current_user.admin:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
     if not current_user.active:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
 
     try:
         # Get data from request
         data = request.get_json()
-        # if not data["username"]:
         if not data.get("username"):
-            return jsonify({'message': 'No username found!'}), 400
+            return api_messages.NoUsernameFound()
         elif not data.get("password"):
-            return jsonify({'message': 'No password found!'}), 400
+            return api_messages.NoPasswordFound()
         elif (len(data.get("username")) <4) or (len(data.get("username")) >= 20):
-            return jsonify({'message': 'Username too short!'}), 400
+            return api_messages.UsernameTooShort()
         elif len(data.get("password")) <5:
-            return jsonify({'message': 'Password too short!'}), 400
+            return api_messages.PasswordTooShort()
 
     except:
-        return jsonify({'message': 'No data found!'}), 400
+        return api_messages.NoDataFound()
 
     # Query dabatase to see if the username already exists
     existing_user = User.query.filter_by(username=data["username"]).first()
@@ -89,18 +88,18 @@ def create_users(current_user):
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify({'message': 'New user created!'})
+        return api_messages.UserCeated()
     else:
-        return jsonify({"message": "User already exists!"})
+        return api_messages.UserAlreadyExists()
 
 @app.route('/users', methods=['GET'])
 @token_required
 def get_all_users(current_user):
 
     if not current_user.admin:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
     if not current_user.active:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
 
     users = User.query.all()
 
@@ -122,14 +121,14 @@ def get_all_users(current_user):
 def get_one_user(current_user, public_id):
 
     if not current_user.admin:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
     if not current_user.active:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
 
     user = User.query.filter_by(public_id=public_id).first()
 
     if not user:
-        return jsonify({'message': 'No user found!'})
+        return api_messages.UserDoesNotExist()
 
     user_data = {}
     user_data['public_id'] = user.public_id
@@ -146,23 +145,23 @@ def get_one_user(current_user, public_id):
 def promote_user(current_user, public_id):
 
     if not current_user.admin:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
     if not current_user.active:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
 
     #Get data from request
     try:
         data = request.get_json()
         if not data.get("promotion"):
-            return jsonify({'message': 'No promotion found!'}), 400
+            return api_messages.NoPromotionFound()
     except:
-         return jsonify({'message': 'No data found!'}), 400
+         return api_messages.NoDataFound()
 
     #Query database to see if user exists
     user = User.query.filter_by(public_id=public_id).first()
 
     if not user:
-        return jsonify({'message': 'No user found!'})
+        return api_messages.UserDoesNotExist()
 
     #Promote User 
     if data.get("promotion") == "admin":
@@ -172,28 +171,28 @@ def promote_user(current_user, public_id):
     elif data.get("promotion") == "inactive":
         user.active = False
     else:
-        return jsonify({'message': 'No valid promotion found!'}), 400
+        return api_messages.NoValidPromotionFound()
     db.session.commit()
-    return jsonify({'message':'The user has been promoted!'})
+    return api_messages.UserPromoted()
 
 @app.route('/user/<public_id>', methods=['DELETE'])
 @token_required
 def delete_user(current_user, public_id):
 
     if not current_user.admin:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
     if not current_user.active:
-        return jsonify({'message': 'Cannot perform that action!'}), 403
+        return api_messages.CannotPerformThatAction()
 
     user = User.query.filter_by(public_id=public_id).first()
 
     if not user:
-        return jsonify({'message': 'No user found!'})
+        return api_messages.UserDoesNotExist()
 
     db.session.delete(user)
     db.session.commit()
 
-    return jsonify({'message':'The user has been deleted!'})
+    return api_messages.UserDeleted()
 
 @app.route('/login')
 def login():
