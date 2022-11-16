@@ -50,3 +50,13 @@ UserCeated = ApiMessage(200, 'The user has been created!')
 NoPromotionFound = ApiMessage(400, 'No promotion found')
 
 NoValidPromotionFound = ApiMessage(400, 'No valid promotion found')
+
+NoDivisionFound = ApiMessage(400, 'No division found')
+
+NoJobNumberFound = ApiMessage(400, 'No job number found')
+
+NoTextFound = ApiMessage(400, 'No text found')
+
+TimesheetAlreadyExists = ApiMessage(400, 'Timesheet already exists')
+
+TimesheetCeated = ApiMessage(200, 'The timesheet has been created!')

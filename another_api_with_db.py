@@ -27,6 +27,7 @@ class User(db.Model):
 
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    public_id = db.Column(db.String(50), unique=True)
     division = db.Column(db.String(20))
     job_number = db.Column(db.String(10))
     text = db.Column(db.String(50))
@@ -219,5 +220,54 @@ def login():
     # Password does not exist or is invalid
     return api_messages.InvalidCredentials()
 
+@app.route('/timesheet', methods=['POST'])
+@token_required
+def create_timesheet(current_user):
+    try:
+        data = request.get_json()
+        if not data.get("division"):
+            return api_messages.NoDivisionFound()
+        elif not data.get("job_number"):
+            return api_messages.NoJobNumberFound()
+        elif not data.get("text"):
+            return api_messages.NoTextFound()
+    except:
+        return api_messages.NoDataFound()
+
+    # Query dabatase to see if the timesheet already exists
+    existing_timesheet = Timesheet.query.filter_by(job_number=data["job_number"]).first()
+
+    if not existing_timesheet:
+
+        #Create new user
+        new_timesheet = Timesheet(public_id=str(uuid.uuid4()), division=data["division"], job_number=data["job_number"] , text=data["text"], complete=False, user_id=current_user.username)
+        db.session.add(new_timesheet)
+        db.session.commit()
+
+        return api_messages.TimesheetCeated()
+    else:
+        return api_messages.TimesheetAlreadyExists()
+
+@app.route('/timesheets', methods=['GET'])
+@token_required
+def get_all_timesheets(current_user):
+
+    timesheets = Timesheet.query.all()
+
+    output = []
+
+    for timesheet in timesheets:
+        timesheet_data = {}
+        timesheet_data['public_id'] = timesheet.public_id
+        timesheet_data['division'] = timesheet.division
+        timesheet_data['job_number'] = timesheet.text
+        timesheet_data['text'] = timesheet.text
+        timesheet_data['complete'] = timesheet.complete
+        timesheet_data['user_id'] = timesheet.user_id
+        output.append(timesheet_data)
+
+    return jsonify({"timesheets": output})
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
