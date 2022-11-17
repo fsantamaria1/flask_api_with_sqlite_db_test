@@ -252,7 +252,13 @@ def create_timesheet(current_user):
 @token_required
 def get_all_timesheets(current_user):
 
-    timesheets = Timesheet.query.all()
+    if current_user.active:
+        if (current_user.admin) or (current_user.manager):
+            timesheets = Timesheet.query.all()
+        else:
+            timesheets = Timesheet.query.filter_by(user_id=current_user.username)
+    else:
+        return api_messages.CannotPerformThatAction()
 
     output = []
 
@@ -260,13 +266,37 @@ def get_all_timesheets(current_user):
         timesheet_data = {}
         timesheet_data['public_id'] = timesheet.public_id
         timesheet_data['division'] = timesheet.division
-        timesheet_data['job_number'] = timesheet.text
+        timesheet_data['job_number'] = timesheet.job_number
         timesheet_data['text'] = timesheet.text
         timesheet_data['complete'] = timesheet.complete
         timesheet_data['user_id'] = timesheet.user_id
         output.append(timesheet_data)
 
     return jsonify({"timesheets": output})
+
+@app.route('/timesheets/<bi_number>', methods=['GET'])
+@token_required
+def get_one_timesheets(current_user, bi_number):
+
+    if (current_user.active):
+        timesheet = Timesheet.query.filter_by(job_number=bi_number).first()
+        if not timesheet:
+            return api_messages.TimesheetDoesNotExists()
+    else:
+        return api_messages.CannotPerformThatAction()
+
+    output = []
+
+    timesheet_data = {}
+    timesheet_data['public_id'] = timesheet.public_id
+    timesheet_data['division'] = timesheet.division
+    timesheet_data['job_number'] = timesheet.text
+    timesheet_data['text'] = timesheet.text
+    timesheet_data['complete'] = timesheet.complete
+    timesheet_data['user_id'] = timesheet.user_id
+    output.append(timesheet_data)
+
+    return jsonify({"timesheet": output})
 
 if __name__ == '__main__':
     # app.run(debug=True)

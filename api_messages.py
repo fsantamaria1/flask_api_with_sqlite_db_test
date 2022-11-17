@@ -60,3 +60,5 @@ NoTextFound = ApiMessage(400, 'No text found')
 TimesheetAlreadyExists = ApiMessage(400, 'Timesheet already exists')
 
 TimesheetCeated = ApiMessage(200, 'The timesheet has been created!')
+
+TimesheetDoesNotExists = ApiMessage(400, 'Timesheet does not exists')
